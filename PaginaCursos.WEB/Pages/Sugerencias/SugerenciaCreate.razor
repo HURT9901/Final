@@ -1,0 +1,46 @@
+﻿@page "/sugerencias/create"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService SweetAlertService
+
+
+<h3>Sugerencia Create</h3>
+
+<SugerenciaForm @ref="sugerenciaForm" Sugerencia="sugerencia" OnSubmit="Create" ReturnAction="Return" />
+
+
+
+@code {
+    private Sugerencia sugerencia = new();
+    private SugerenciaForm sugerenciaForm;
+
+    private async Task Create()
+    {
+        var responseHttp = await repository.PostAsync("/api/sugerencias", sugerencia);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await SweetAlertService.FireAsync("Error", message);
+            return;
+        }
+
+        Return();
+
+        var toast = SweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 6000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito");
+    }
+
+
+    private void Return()
+    {
+        sugerenciaForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/sugerencias");
+    }
+
+}

@@ -1,0 +1,46 @@
+﻿@page "/actividades/create"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService SweetAlertService
+
+
+<h3>Actividades Create</h3>
+
+<ActividadForm @ref="actividadForm" Actividad="actividad" OnSubmit="Create" ReturnAction="Return" />
+
+
+
+@code {
+    private Actividad actividad = new();
+    private ActividadForm actividadForm;
+
+    private async Task Create()
+    {
+        var responseHttp = await repository.PostAsync("/api/actividades", actividad);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await SweetAlertService.FireAsync("Error", message);
+            return;
+        }
+
+        Return();
+
+        var toast = SweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 6000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito");
+    }
+
+
+    private void Return()
+    {
+        actividadForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/actividades");
+    }
+
+}

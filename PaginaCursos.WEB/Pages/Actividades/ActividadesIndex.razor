@@ -1,0 +1,138 @@
+﻿@page "/actividades"
+@using PaginaCursos.Shared.Entities
+@using PaginaCursos.WEB.Repositories
+@using PaginaCursos.WEB.Shared
+@inject IRepository repository
+@inject SweetAlertService SweetAlertService
+@inject NavigationManager navigationManager
+
+
+<div class="card">
+    <div class="card-header">
+        <span>
+            <i class="bi bi-person" /> Actividades
+            <a class="btn btn-primary btn-sm float-end" href="/actividades/create"><i class="bi bi-plus-circle" />Nuevo Actividad</a>
+
+        </span>
+    </div>
+
+    <div class="card-body">
+        <GenericList MyList="Actividades">
+            <Body>
+                <div class="align-items-center">
+                </div>
+
+
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <b>Id-Actividad</b>
+                            </td>
+                            <td>
+                                <b>Nombre de la actividad</b>
+                            </td>
+                            <td>
+                                <b>Descripción de la actividad</b>
+                            </td>
+                            <td>
+                                <b>Fecha y hora de entrega</b>
+                            </td>
+                            <td>
+                                <b>Id-Curso</b>
+                            </td>
+                        </tr>
+                        @foreach (var item in Actividades!)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.NombreActividad</td>
+                                <td>@item.DescripcionActividad</td>
+                                <td>@item.FechaAccion</td>
+                                <td>@item.CursoId</td>
+
+
+                                <td>
+                                    <a href="/actividades/edit/@item.Id" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square" /> Editar</a>
+                                    <button @onclick=@(() => DeleteAsync(item)) class="btn btn-sm btn-danger"><i class="bi bi-trash-fill" /> Borrar</button>
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </Body>
+        </GenericList>
+    </div>
+</div>
+@code {
+    public List<Actividad> Actividades { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var responseHttp = await repository.GetAsync<List<Actividad>>("api/actividades");
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await SweetAlertService.FireAsync("Error", message, SweetAlertIcon.Error);
+            return;
+        }
+        Actividades = responseHttp.Response;
+    }
+
+    private async Task DeleteAsync(Actividad Actividad)
+    {
+        var result = await SweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = $"¿Estas seguro de querer borrar la ACTIVIDAD: {Actividad.NombreActividad}?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+            });
+        var confirm = string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+
+        var responseHttp = await repository.DeleteAsync<Actividad>($"api/actividades/{Actividad.Id}");
+        if (responseHttp.Error)
+        {
+            if (responseHttp.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("actividades");
+            }
+            else
+            {
+                var mensajeError = await responseHttp.GetErrorMessageAsync();
+                await SweetAlertService.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+            }
+            return;
+        }
+
+        await LoadAsync();
+        var toast = SweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro borrado con exito");
+    }
+
+}
+
+

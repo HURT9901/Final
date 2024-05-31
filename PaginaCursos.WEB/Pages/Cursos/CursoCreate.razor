@@ -1,0 +1,45 @@
+﻿@page "/cursos/create"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService SweetAlertService
+
+
+
+<CursoForm @ref="cursoForm" Curso="Curso" OnSubmit="Create" ReturnAction="Return" />
+
+
+
+@code {
+    private Curso Curso = new();
+    private CursoForm cursoForm;
+
+    private async Task Create()
+    {
+        var responseHttp = await repository.PostAsync("/api/cursos", Curso);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await SweetAlertService.FireAsync("Error", message);
+            return;
+        }
+
+        Return();
+
+        var toast = SweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 6000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito");
+    }
+
+
+    private void Return()
+    {
+        cursoForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/cursos");
+    }
+
+}

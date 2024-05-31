@@ -1,0 +1,70 @@
+﻿@page "/"
+@attribute [Authorize]
+
+<PageTitle>Home</PageTitle>
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h1>Bienvenido, @context.User.Identity?.Name</h1>
+                    <p>Estas autenticado y autorizado para acceder a esta página.</p>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="jumbotron">
+                        <h2 class="display-4">Nuestro Negocio</h2>
+                        <p class="lead">Somos una empresa dedicada a ofrecer los mejores cursos en línea. Nuestro objetivo es proporcionar educación de calidad accesible para todos.</p>
+                        <hr class="my-4">
+                        <p>Visión: Ser la plataforma líder en educación en línea, capacitando a personas en todo el mundo para alcanzar sus metas académicas y profesionales.</p>
+                        <p>Ofrecemos una amplia gama de cursos en diferentes áreas, diseñados por expertos en la materia.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="img/course1.jpg" class="card-img-top" alt="Curso 1">
+                        <div class="card-body">
+                            <h5 class="card-title">Curso 1</h5>
+                            <p class="card-text">Descripción breve del curso 1.</p>
+                            <a href="#" class="btn btn-primary">Ver más</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="img/course2.jpg" class="card-img-top" alt="Curso 2">
+                        <div class="card-body">
+                            <h5 class="card-title">Curso 2</h5>
+                            <p class="card-text">Descripción breve del curso 2.</p>
+                            <a href="#" class="btn btn-primary">Ver más</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="img/course3.jpg" class="card-img-top" alt="Curso 3">
+                        <div class="card-body">
+                            <h5 class="card-title">Curso 3</h5>
+                            <p class="card-text">Descripción breve del curso 3.</p>
+                            <a href="#" class="btn btn-primary">Ver más</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>No estas autorizado</p>
+                </div>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+

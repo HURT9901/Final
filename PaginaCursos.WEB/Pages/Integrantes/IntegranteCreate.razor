@@ -1,0 +1,44 @@
+﻿@page "/integrantes/create"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService SweetAlertService
+
+
+<IntegranteForm @ref="integranteForm" Integrante="Integrante" OnSubmit="Create" ReturnAction="Return" />
+
+
+
+@code {
+    private Integrante Integrante = new();
+    private IntegranteForm integranteForm;
+
+    private async Task Create()
+    {
+        var responseHttp = await repository.PostAsync("/api/integrantes", Integrante);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await SweetAlertService.FireAsync("Error", message);
+            return;
+        }
+
+        Return();
+
+        var toast = SweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 6000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito");
+    }
+
+
+    private void Return()
+    {
+        integranteForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/integrantes");
+    }
+
+}

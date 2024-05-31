@@ -1,0 +1,44 @@
+﻿@page "/grupos/create"
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService SweetAlertService
+
+
+<GrupoForm @ref="grupoForm" Grupo="grupo" OnSubmit="Create" ReturnAction="Return" />
+
+
+
+@code {
+    private Grupo grupo = new();
+    private GrupoForm grupoForm;
+
+    private async Task Create()
+    {
+        var responseHttp = await repository.PostAsync("/api/grupos", grupo);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await SweetAlertService.FireAsync("Error", message);
+            return;
+        }
+
+        Return();
+
+        var toast = SweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 6000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Registro creado con éxito");
+    }
+
+
+    private void Return()
+    {
+        grupoForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/grupos");
+    }
+
+}

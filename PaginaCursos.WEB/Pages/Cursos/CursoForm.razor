@@ -1,0 +1,123 @@
+﻿@using PaginaCursos.Shared.Entities
+@using PaginaCursos.WEB.Repositories
+@using PaginaCursos.WEB.Shared
+@inject IRepository repository
+@inject SweetAlertService SweetAlertService
+@inject SweetAlertService swal
+
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation"></NavigationLock>
+
+<EditForm EditContext="editContext" OnValidSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Nombre del curso:</label>
+        <div>
+
+            <InputText @bind-Value="Curso.NombreCurso" />
+            <ValidationMessage For="@(()=>Curso.NombreCurso)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Descripción:</label>
+        <div>
+            <InputText @bind-Value="Curso.DescripcionCurso" />
+            <ValidationMessage For="@(()=>Curso.DescripcionCurso)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Fecha de inicio:</label>
+        <div>
+            <InputDate @bind-Value="Curso.FechaInicio" />
+            <ValidationMessage For="@(()=>Curso.FechaInicio)" />
+        </div>
+    </div>
+
+
+    <div class="mb-3">
+        <label>Fecha de finalización:</label>
+        <div>
+            <InputDate @bind-Value="Curso.FechaFinalizacion" />
+            <ValidationMessage For="@(()=>Curso.FechaFinalizacion)" />
+        </div>
+    </div>
+
+    
+    <div class="mb-3">
+        <label>Id del docente:</label>
+        <div>
+            <InputNumber @bind-Value="Curso.ProfesorId" />
+            <ValidationMessage For="@(()=>Curso.ProfesorId)" />
+        </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <button class="btn btn-info" type="reset">Limpiar</button>
+    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
+
+
+
+</EditForm>
+
+@code {
+
+    private EditContext editContext = null!;
+    protected override void OnInitialized()
+    {
+        editContext = new(Curso);
+    }
+
+
+    [EditorRequired]
+    [Parameter]
+    public Curso Curso { get; set; }
+
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback ReturnAction { get; set; }
+
+
+    public bool FormPostedSuccessfully { get; set; } = false;
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        var formularioFueEditado = editContext.IsModified();
+
+        if (!formularioFueEditado)
+        {
+            return;
+        }
+
+        if (FormPostedSuccessfully)
+        {
+            return;
+        }
+
+        var resultado = await swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Deseas abandonar la página y perder los cambios?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true
+            });
+
+        var confirmado = !string.IsNullOrEmpty(resultado.Value);
+
+        if (confirmado)
+        {
+            return;
+        }
+
+        context.PreventNavigation();
+    }
+
+
+}

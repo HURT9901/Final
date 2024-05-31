@@ -1,0 +1,78 @@
+﻿@page "/estudiantes/edit/{Id:int}"
+@using System.Net
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+
+
+<h3>Editar</h3>
+
+@if (estudiante is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <EstudianteForm @ref="estudianteForm" Estudiante="estudiante" OnSubmit="Editar" ReturnAction="Return"/> 
+    
+}
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Estudiante estudiante;
+    private EstudianteForm estudianteForm;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var responseHttp = await repository.GetAsync<Estudiante>($"api/estudiantes/{Id}");
+        if (responseHttp.Error)
+        {
+            if (responseHttp.HttpResponseMessage.StatusCode == HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("/estudiantes");
+            }
+            else
+            {
+                var messsage = await responseHttp.GetErrorMessageAsync();
+                await sweetAlertService.FireAsync("Error", messsage, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            estudiante = responseHttp.Response;
+        }
+    }
+
+    private async Task Editar()
+    {
+        var responseHttp = await repository.PutAsync("/api/estudiantes", estudiante);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message);
+            return;
+        }
+
+        Return();
+        var toast = sweetAlertService.Mixin(new SweetAlertOptions
+            {
+                Toast = true,
+                Position = SweetAlertPosition.BottomEnd,
+                ShowConfirmButton = true,
+                Timer = 3000
+            });
+        await toast.FireAsync(icon: SweetAlertIcon.Success, message: "Cambios guardados con éxito.");
+    }
+
+    private void Return()
+    {
+        estudianteForm!.FormPostedSuccessfully = true;
+        navigationManager.NavigateTo("/estudiantes");
+    }
+
+
+}
